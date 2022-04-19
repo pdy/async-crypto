@@ -1,12 +1,17 @@
 {
   "targets": [
     { 
-      "cflags!": [ "-fno-exceptions" ],
-      "cflags_cc!": [ "-fno-exceptions" ],
-      "include_dirs" : [
-        "<!@(node -p \"require('node-addon-api').include\")"
+      "cflags": [ "-fno-exceptions", "-fPIC" ],
+      "ldflags":[
+        "-L./src/openssl_build/lib -Bstatic -lssl -lcrypto -Bdynamic -pthread -ldl"
+
       ],
-      "target_name": "hello_addon",
+      "include_dirs" : [
+        "<!@(node -p \"require('node-addon-api').include\")",
+        "./src/openssl_build/include",
+        "./src/simpleopenssl/include"
+      ],
+      "target_name": "async-crypto",
       "sources": [
         "./src/addon.cpp",
       ],

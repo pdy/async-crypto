@@ -16,9 +16,11 @@ flags = [
     '-std=c++17',
     '-stdlib=libstdc++',
     '-x','c++',
-    '-I','.',
-    '-I','node_modules/node-addon-api/',
-    '-I','/usr/include/nodejs/src/'
+    '-I','./src',
+    '-isystem','node_modules/node-addon-api/',
+    '-isystem','/usr/include/nodejs/src/',
+    '-isystem','./src/openssl_build/include/',
+    '-isystem','./src/simpleopenssl/include/'
 ]
 
 
