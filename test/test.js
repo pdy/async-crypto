@@ -2,6 +2,7 @@
 
 const rsa = require('../index.js').rsa;
 
+//openssl genrsa -out private.pem 3072
 const pemExample = String.raw`-----BEGIN RSA PRIVATE KEY-----
 MIIG5AIBAAKCAYEA1kpAu9FYun7qqBfk1vGF55SnXRDYJtWdODdHT9Tg1SGXMy6R
 cgFA6FWZeGD++AwPd7+0OVlHtQQmxhn5B2jFBggSMY3jJNswY4YwIZmFOa1xyzjU
