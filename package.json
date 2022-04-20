@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install" : "cd src/ && ./build_deps.sh && cd ../ && node-gyp rebuild"
+    "install": "cd src/ && ./build_deps.sh && cd ../ && node-gyp rebuild"
   },
   "repository": {
     "type": "git",
@@ -21,8 +21,8 @@
   "license": "MIT",
   "gypfile": true,
   "dependencies": {
-    "node-addon-api": "^4.3.0",
-    "@types/node": "^17.0.25"
+    "@types/node": "^17.0.25",
+    "node-addon-api": "^4.3.0"
   },
   "bugs": {
     "url": "https://github.com/pdy/async-crypto/issues"
