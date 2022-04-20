@@ -13,7 +13,7 @@ flags = [
     '-Wno-c++98-compat-pedantic',
     '-Wno-padded',
     '-Wno-missing-prototypes',
-    '-std=c++17',
+    '-std=c++11',
     '-stdlib=libstdc++',
     '-x','c++',
     '-I','./src',

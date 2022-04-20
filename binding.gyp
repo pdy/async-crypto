@@ -1,7 +1,7 @@
 {
   "targets": [
     { 
-      "cflags": [ "-fno-exceptions", "-fPIC" ],
+      "cflags": [ "-std=c++11", "-fno-exceptions", "-fPIC" ],
       "ldflags":[
         "-L./src/openssl_build/lib -Bstatic -lssl -lcrypto -Bdynamic -pthread -ldl"
 
