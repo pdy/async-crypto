@@ -1,6 +1,6 @@
 'use strict'
-
-const rsa = require('../index.js').rsa;
+const async_crypto = require('../index.js');
+const rsa = async_crypto.rsa;
 
 //openssl genrsa -out private.pem 3072
 const pemExample = String.raw`-----BEGIN RSA PRIVATE KEY-----
@@ -53,3 +53,5 @@ rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
     console.log(retBuffer);
   }
 });
+
+console.log("OpenSSL version: " + async_crypto.getOpenSSLVersion()); 

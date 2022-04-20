@@ -27,12 +27,20 @@ void RSA_PemPrivKeyToDer(const Napi::CallbackInfo &info)
   async->Queue();
 }
 
+Napi::String GetOpenSSLVersion(const Napi::CallbackInfo &info)
+{
+  return Napi::String::New(info.Env(), ::so::getOpenSSLVersion());
+}
+
 Napi::Object init(Napi::Env env, Napi::Object exports)
 {
-    exports.Set(Napi::String::New(env, "reverseByteBuffer"), Napi::Function::New(env, ReverseByteBuffer));
-    exports.Set(Napi::String::New(env, "rsa_pemPrivKeyToDer"), Napi::Function::New(env, RSA_PemPrivKeyToDer));
+  //
+  exports.Set(Napi::String::New(env, "getOpenSSLVersion"), Napi::Function::New(env, GetOpenSSLVersion));
+  
+  exports.Set(Napi::String::New(env, "reverseByteBuffer"), Napi::Function::New(env, ReverseByteBuffer));
+  exports.Set(Napi::String::New(env, "rsa_pemPrivKeyToDer"), Napi::Function::New(env, RSA_PemPrivKeyToDer));
 
-    return exports;
+  return exports;
 };
 
 NODE_API_MODULE(hello_world, init);
