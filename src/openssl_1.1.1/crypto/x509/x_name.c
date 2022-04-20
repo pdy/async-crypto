@@ -217,8 +217,8 @@ static int x509_name_ex_i2d(ASN1_VALUE **val, unsigned char **out,
         if (ret < 0)
             return ret;
         ret = x509_name_canon(a);
-        if (!ret)
-            return -1;
+        if (ret < 0)
+            return ret;
     }
     ret = a->bytes->length;
     if (out != NULL) {
