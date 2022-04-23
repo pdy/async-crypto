@@ -1,6 +1,19 @@
 'use strict'
+
 const async_crypto = require('../index.js');
 const rsa = async_crypto.rsa;
+
+async_crypto.init();
+
+function cleanup(err, eventType) {
+  async_crypto.cleanup();
+  console.log("Exiting: " + eventType);
+}
+
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+  process.on(eventType, cleanup.bind(null, eventType));
+})
+
 
 //openssl genrsa -out private.pem 3072
 const pemExample = String.raw`-----BEGIN RSA PRIVATE KEY-----

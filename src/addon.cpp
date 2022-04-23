@@ -1,7 +1,18 @@
 #include <napi.h>
 #include <vector>
+#include <memory>
 
 #include "async_workers.cpp"
+
+void InitOSSL(const Napi::CallbackInfo &/*info*/)
+{
+  so::init();
+}
+
+void CleanupOSSL(const Napi::CallbackInfo &/*info*/)
+{
+  so::cleanUp();
+}
 
 void ReverseByteBuffer(const Napi::CallbackInfo &info)
 {
@@ -34,7 +45,9 @@ Napi::String GetOpenSSLVersion(const Napi::CallbackInfo &info)
 
 Napi::Object init(Napi::Env env, Napi::Object exports)
 {
-  //
+  exports.Set(Napi::String::New(env, "init"), Napi::Function::New(env, InitOSSL));
+  exports.Set(Napi::String::New(env, "cleanup"), Napi::Function::New(env, CleanupOSSL));
+
   exports.Set(Napi::String::New(env, "getOpenSSLVersion"), Napi::Function::New(env, GetOpenSSLVersion));
   
   exports.Set(Napi::String::New(env, "reverseByteBuffer"), Napi::Function::New(env, ReverseByteBuffer));

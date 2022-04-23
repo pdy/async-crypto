@@ -7,7 +7,7 @@
 
 namespace {
 
-void byte_array_delete(Napi::Env /*env*/, uint8_t *arr, const char *hint) 
+void byte_array_delete(Napi::Env /*env*/, uint8_t *arr, const char * /*hint*/ ) 
 {
 //   std::cout << "BYTE_ARRAY_DELETE " << hint << "\n";
   delete[] arr;

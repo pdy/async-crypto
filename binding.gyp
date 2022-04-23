@@ -1,14 +1,9 @@
 {
   "targets": [
     { 
-      "cflags": [ "-std=c++11", "-fno-exceptions", "-fPIC" ],
-      "ldflags":[
-        "-L./src/openssl_build/lib -Bstatic -lssl -lcrypto -Bdynamic -pthread -ldl"
-
-      ],
+      "cflags": [ "-fno-exceptions"],
       "include_dirs" : [
         "<!@(node -p \"require('node-addon-api').include\")",
-        "./src/openssl_build/include",
         "./src/simpleopenssl/include"
       ],
       "target_name": "async-crypto",
