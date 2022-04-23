@@ -100,4 +100,41 @@ private:
   size_t m_size;
 };
 
+class RSA_DerPrivToPemAsync : public Napi::AsyncWorker
+{
+public:
+  RSA_DerPrivToPemAsync(Napi::Function &callback, so::Bytes der)
+    : AsyncWorker(callback), m_inDer{std::move(der)} 
+  {}
+
+  void Execute() override
+  {
+    const auto result = so::rsa::convertDerToPrivKey(m_inDer);
+    if(!result)
+      AsyncWorker::SetError(result.msg());
+    else
+    {
+      auto pem = so::rsa::convertPrivKeyToPem(*result.value);
+      if(!pem)
+        AsyncWorker::SetError(pem.msg());
+      else
+        m_pem = pem.moveValue();
+    }
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env()); 
+
+    Callback().Call({
+        Env().Null(),
+        Napi::String::New(Env(), m_pem) 
+    });
+  }
+
+private:
+  so::Bytes m_inDer;
+  std::string m_pem;
+};
+
 } // namespace

@@ -64,6 +64,21 @@ rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
   {
     console.log("RSA DER size " + retBuffer.length);
     console.log(retBuffer);
+
+    
+    console.log("Reverting DER back to PEM");
+    rsa.derPrivKeyToPem(retBuffer, function(err, pem) {
+      if(err)
+        console.log(err);
+      else
+      {
+        console.log("Comparing PEM conversion with expected");
+        if(pem === pemExample)
+          console.log("  OK");
+        else
+          console.log("  FAIL");
+      }
+    });    
   }
 });
 
