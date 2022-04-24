@@ -40,14 +40,10 @@ void RSA_PemPrivKeyToDer(const Napi::CallbackInfo &info)
 
 void RSA_DerPrivKeyToPem(const Napi::CallbackInfo &info)
 {
-  const auto byteBuffer = info[0].As<Napi::Buffer<uint8_t>>();
+  auto byteBuffer = info[0].As<Napi::Buffer<uint8_t>>();
   auto callback = info[1].As<Napi::Function>();
 
-  so::Bytes der; der.reserve(byteBuffer.ByteLength());
-  for(size_t i = 0; i < byteBuffer.ByteLength(); ++i)
-    der.push_back(byteBuffer[i]);
-
-  auto *async = new RSA_DerPrivToPemAsync(callback, std::move(der));
+  auto *async = new RSA_DerPrivToPemAsync(callback, byteBuffer);
   async->Queue();
 }
 
