@@ -57,6 +57,7 @@ wRD+npnS9L4rG/qFzu8/lzkzthfJPV2o3O2WBQhDz8Kup56LB8Iuxg==
 -----END RSA PRIVATE KEY-----
 `
 
+console.time("execution");
 rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
   if(err)
     console.log(err)
@@ -78,6 +79,8 @@ rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
         else
           console.log("  FAIL");
       }
+
+      console.timeEnd("execution");
     });    
   }
 });
