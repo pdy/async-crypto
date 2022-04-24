@@ -51,10 +51,12 @@ private:
   size_t m_size {0};
 };
 
-class RSA_PemPrivKeyToDerAsync : public Napi::AsyncWorker
+namespace rsa {
+
+class PemPrivKeyToDerAsync : public Napi::AsyncWorker
 {
 public:
-  RSA_PemPrivKeyToDerAsync(Napi::Function &callback, std::string pem)
+  PemPrivKeyToDerAsync(Napi::Function &callback, std::string pem)
     : AsyncWorker(callback), m_pem{std::move(pem)}, m_outDer{nullptr}
   {}
 
@@ -90,7 +92,7 @@ public:
             m_outDer.release(),
             m_size,
             byte_array_delete,
-            "RSA_PemPrivKeyToDerAsync")
+            "PemPrivKeyToDerAsync")
     });
   }
 
@@ -100,10 +102,10 @@ private:
   size_t m_size;
 };
 
-class RSA_DerPrivToPemAsync : public Napi::AsyncWorker
+class DerPrivToPemAsync : public Napi::AsyncWorker
 {
 public:
-  RSA_DerPrivToPemAsync(Napi::Function &callback, so::Bytes der)
+  DerPrivToPemAsync(Napi::Function &callback, so::Bytes der)
     : AsyncWorker(callback), m_inDer{std::move(der)} 
   {}
 
@@ -136,5 +138,85 @@ private:
   so::Bytes m_inDer;
   std::string m_pem;
 };
+
+
+class SignSHA256 : public Napi::AsyncWorker
+{
+  so::Bytes m_data;
+  so::Bytes m_derKey;
+  so::Bytes m_signature;
+
+public:
+  SignSHA256(Napi::Function &callback, so::Bytes derData, so::Bytes derKey)
+    : AsyncWorker(callback), m_data{std::move(derData)}, m_derKey{std::move(derKey)}
+  {}
+
+  void Execute() override
+  {
+    auto key = so::rsa::convertDerToPrivKey(m_derKey);
+    if(!key)
+    {
+      AsyncWorker::SetError(key.msg());
+      return;
+    }
+
+    auto signature = so::rsa::signSha256(m_data, *key.value);
+    if(!signature)
+      AsyncWorker::SetError(signature.msg());
+    else
+      m_signature = signature.moveValue();
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env());
+
+    Callback().Call({
+      Env().Null(),
+      Napi::Buffer<uint8_t>::Copy(Env(), m_signature.data(), m_signature.size())
+    });
+  }
+};
+
+class VerifySHA256 : public Napi::AsyncWorker
+{
+  so::Bytes m_signature;
+  so::Bytes m_data;
+  so::Bytes m_derKey;
+  bool m_result{false};
+
+public:
+  VerifySHA256(Napi::Function &callback, so::Bytes signature, so::Bytes data, so::Bytes derKey)
+    : AsyncWorker(callback), m_signature{std::move(signature)}, m_data{std::move(data)}, m_derKey{std::move(derKey)}
+  {}
+
+  void Execute() override
+  {
+    auto key = so::rsa::convertDerToPrivKey(m_derKey);
+    if(!key)
+    {
+      AsyncWorker::SetError(key.msg());
+      return;
+    }
+
+    auto verify = so::rsa::verifySha256Signature(m_signature, m_data, *key.value);
+    if(!verify)
+      AsyncWorker::SetError(verify.msg());
+    else
+      m_result = verify.value;
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env());
+
+    Callback().Call({
+      Env().Null(),
+      Napi::Boolean::New(Env(), m_result)
+    });
+  }
+};
+
+} // namespace rsa {
 
 } // namespace

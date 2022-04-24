@@ -34,7 +34,7 @@ void RSA_PemPrivKeyToDer(const Napi::CallbackInfo &info)
   std::string pemPriv = info[0].As<Napi::String>();
   Napi::Function callback = info[1].As<Napi::Function>();
 
-  auto *async = new RSA_PemPrivKeyToDerAsync(callback, std::move(pemPriv));
+  auto *async = new rsa::PemPrivKeyToDerAsync(callback, std::move(pemPriv));
   async->Queue();
 }
 
@@ -46,8 +46,49 @@ void RSA_DerPrivKeyToPem(const Napi::CallbackInfo &info)
   so::Bytes der; der.reserve(byteBuffer.ByteLength());
   for(size_t i = 0; i < byteBuffer.ByteLength(); ++i)
     der.push_back(byteBuffer[i]);
+  
+  auto *async = new rsa::DerPrivToPemAsync(callback, std::move(der));
+  async->Queue();
+}
 
-  auto *async = new RSA_DerPrivToPemAsync(callback, std::move(der));
+void RSA_SignSHA256(const Napi::CallbackInfo &info)
+{
+  const auto dataBuffer = info[0].As<Napi::Buffer<uint8_t>>();
+  const auto derKeyBuffer = info[1].As<Napi::Buffer<uint8_t>>();
+  auto callback = info[2].As<Napi::Function>();
+
+  so::Bytes data; data.reserve(dataBuffer.ByteLength());
+  for(size_t i = 0; i < dataBuffer.ByteLength(); ++i)
+    data.push_back(dataBuffer[i]);
+
+  so::Bytes derKey; derKey.reserve(derKeyBuffer.ByteLength());
+  for(size_t i = 0; i < derKeyBuffer.ByteLength(); ++i)
+    derKey.push_back(derKeyBuffer[i]);
+
+  auto *async = new rsa::SignSHA256(callback, std::move(data), std::move(derKey));
+  async->Queue();
+}
+
+void RSA_VerifySHA256(const Napi::CallbackInfo &info)
+{
+  const auto sigBuffer = info[0].As<Napi::Buffer<uint8_t>>();
+  const auto dataBuffer = info[1].As<Napi::Buffer<uint8_t>>();
+  const auto derKeyBuffer = info[2].As<Napi::Buffer<uint8_t>>();
+  auto callback = info[3].As<Napi::Function>();
+  
+  so::Bytes sig; sig.reserve(sigBuffer.ByteLength());
+  for(size_t i = 0; i < sigBuffer.ByteLength(); ++i)
+    sig.push_back(sigBuffer[i]);
+  
+  so::Bytes data; data.reserve(dataBuffer.ByteLength());
+  for(size_t i = 0; i < dataBuffer.ByteLength(); ++i)
+    data.push_back(dataBuffer[i]);
+
+  so::Bytes derKey; derKey.reserve(derKeyBuffer.ByteLength());
+  for(size_t i = 0; i < derKeyBuffer.ByteLength(); ++i)
+    derKey.push_back(derKeyBuffer[i]);
+
+  auto *async = new rsa::VerifySHA256(callback, std::move(sig), std::move(data), std::move(derKey));
   async->Queue();
 }
 
@@ -66,6 +107,8 @@ Napi::Object init(Napi::Env env, Napi::Object exports)
   exports.Set(Napi::String::New(env, "reverseByteBuffer"), Napi::Function::New(env, ReverseByteBuffer));
   exports.Set(Napi::String::New(env, "rsa_pemPrivKeyToDer"), Napi::Function::New(env, RSA_PemPrivKeyToDer));
   exports.Set(Napi::String::New(env, "rsa_derPrivKeyToPem"), Napi::Function::New(env, RSA_DerPrivKeyToPem));
+  exports.Set(Napi::String::New(env, "rsa_signSHA256"), Napi::Function::New(env, RSA_SignSHA256));
+  exports.Set(Napi::String::New(env, "rsa_verifySHA256"), Napi::Function::New(env, RSA_VerifySHA256));
 
   return exports;
 };

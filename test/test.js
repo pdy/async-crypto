@@ -57,7 +57,7 @@ wRD+npnS9L4rG/qFzu8/lzkzthfJPV2o3O2WBQhDz8Kup56LB8Iuxg==
 -----END RSA PRIVATE KEY-----
 `
 
-console.time("execution");
+console.time("conversionTime");
 rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
   if(err)
     console.log(err)
@@ -80,9 +80,37 @@ rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
           console.log("  FAIL");
       }
 
-      console.timeEnd("execution");
+      console.timeEnd("conversionTime");
     });    
   }
 });
 
-console.log("OpenSSL version: " + async_crypto.getOpenSSLVersion()); 
+console.log("OpenSSL version: " + async_crypto.getOpenSSLVersion());
+
+
+
+const buffer = Buffer.from([1,2,3,4,5,6,7]);
+rsa.pemPrivKeyToDer(pemExample, function(err, der){
+  if(err)
+    console.log("To DER error" + err);
+  else
+  {
+    console.time("signVerify");
+    rsa.signSHA256(buffer, der, function(err, signed) {
+      if(err)
+        console.log("Sign ERROR: " + err)
+      else
+      {
+        rsa.verifySHA256(signed, buffer, der, function(err, verified) {
+          if(err)
+            console.log("Verify ERROR: " + err)
+          else
+          {
+            console.log("verified: " + verified);
+            console.timeEnd("signVerify");
+          }
+        });
+      }
+    });
+  }
+});
