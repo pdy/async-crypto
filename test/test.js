@@ -139,5 +139,12 @@ rsa.createKey(Number(3072), function(err, key){
   }
 });
 
+rsa.createKey(1234, function(err, key) {
+  if(err)
+    console.log("CreateKey error" + err);
+  else
+    console.log("FAIL, succeded but should return error");
+  
+})
 
 
