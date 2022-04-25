@@ -29,6 +29,15 @@ void ReverseByteBuffer(const Napi::CallbackInfo &info)
   async->Queue();
 }
 
+void RSA_CreateKey(const Napi::CallbackInfo &info)
+{
+  const int keyBits = info[0].As<Napi::Number>();
+  auto cb = info[1].As<Napi::Function>();
+
+  auto *async = new ::rsa::CreateKey(cb, keyBits);
+  async->Queue();
+}
+
 void RSA_PemPrivKeyToDer(const Napi::CallbackInfo &info)
 {
   std::string pemPriv = info[0].As<Napi::String>();
@@ -105,6 +114,8 @@ Napi::Object init(Napi::Env env, Napi::Object exports)
   exports.Set(Napi::String::New(env, "getOpenSSLVersion"), Napi::Function::New(env, GetOpenSSLVersion));
   
   exports.Set(Napi::String::New(env, "reverseByteBuffer"), Napi::Function::New(env, ReverseByteBuffer));
+  
+  exports.Set(Napi::String::New(env, "rsa_createKey"), Napi::Function::New(env, RSA_CreateKey));
   exports.Set(Napi::String::New(env, "rsa_pemPrivKeyToDer"), Napi::Function::New(env, RSA_PemPrivKeyToDer));
   exports.Set(Napi::String::New(env, "rsa_derPrivKeyToPem"), Napi::Function::New(env, RSA_DerPrivKeyToPem));
   exports.Set(Napi::String::New(env, "rsa_signSHA256"), Napi::Function::New(env, RSA_SignSHA256));

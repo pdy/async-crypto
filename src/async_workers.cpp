@@ -53,6 +53,54 @@ private:
 
 namespace rsa {
 
+class CreateKey : public Napi::AsyncWorker
+{
+  int m_keyBits;
+  so::Bytes m_keyDer;
+
+public:
+  CreateKey(Napi::Function &cb, int keyBits)
+    : AsyncWorker(cb), m_keyBits{keyBits}
+  {}
+
+  void Execute() override
+  {
+    static constexpr int ALLOWED_KEY_BYTES[] = {1024, 2048, 3072, 4096, 5120, 6144, 7168};
+    if(!std::any_of(std::begin(ALLOWED_KEY_BYTES), std::end(ALLOWED_KEY_BYTES), [&](int val){ return val == m_keyBits; }))
+    {
+      AsyncWorker::SetError("Incorrect key bits value. Allowed values 1024, 2048, 3072, 4096, 5120, 6144, 7168");
+      return;
+    }
+
+    auto key = so::rsa::create(static_cast<so::rsa::KeyBits>(m_keyBits), so::rsa::Exponent::_65537_);
+    if(!key)
+    {
+      AsyncWorker::SetError(key.msg());
+      return;
+    }
+
+    auto der = so::rsa::convertPrivKeyToDer(*key.value);
+    if(!der)
+    {
+      AsyncWorker::SetError(der.msg());
+      return;
+    }
+
+    m_keyDer = der.moveValue();
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env());
+
+    Callback().Call({
+      Env().Null(),
+      Napi::Buffer<uint8_t>::Copy(Env(), m_keyDer.data(), m_keyDer.size())
+    });
+  }
+
+};
+
 class PemPrivKeyToDerAsync : public Napi::AsyncWorker
 {
 public:

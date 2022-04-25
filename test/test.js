@@ -88,14 +88,13 @@ rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
 console.log("OpenSSL version: " + async_crypto.getOpenSSLVersion());
 
 
-
 const buffer = Buffer.from([1,2,3,4,5,6,7]);
 rsa.pemPrivKeyToDer(pemExample, function(err, der){
   if(err)
     console.log("To DER error" + err);
   else
   {
-    console.time("signVerify");
+    console.time("signVerifyPEMKey");
     rsa.signSHA256(buffer, der, function(err, signed) {
       if(err)
         console.log("Sign ERROR: " + err)
@@ -107,10 +106,38 @@ rsa.pemPrivKeyToDer(pemExample, function(err, der){
           else
           {
             console.log("verified: " + verified);
-            console.timeEnd("signVerify");
+            console.timeEnd("signVerifyPEMKey");
           }
         });
       }
     });
   }
 });
+
+console.time("signVerifyCreateKey");
+rsa.createKey(Number(3072), function(err, key){
+  if(err)
+    console.log("CreateKey error: " + err);
+  else
+  {
+    rsa.signSHA256(buffer, key, function(err, signed) {
+      if(err)
+        console.log("Sign ERROR: " + err)
+      else
+      {
+        rsa.verifySHA256(signed, buffer, key, function(err, verified) {
+          if(err)
+            console.log("Verify ERROR: " + err)
+          else
+          {
+            console.log("verified: " + verified);
+            console.timeEnd("signVerifyCreateKey");
+          }
+        });
+      }
+    });
+  }
+});
+
+
+
