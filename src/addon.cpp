@@ -45,7 +45,9 @@ void RSA_DerPrivKeyToPem(const Napi::CallbackInfo &info)
   async->Queue();
 }
 
-void RSA_SignSHA256(const Napi::CallbackInfo &info)
+namespace internal {
+
+void RSA_Sign(const Napi::CallbackInfo &info, rsa::RsaSignFunction signFunc)
 {
   const auto dataBuffer = info[0].As<Napi::Buffer<uint8_t>>();
   const auto derKeyBuffer = info[1].As<Napi::Buffer<uint8_t>>();
@@ -59,11 +61,11 @@ void RSA_SignSHA256(const Napi::CallbackInfo &info)
   for(size_t i = 0; i < derKeyBuffer.ByteLength(); ++i)
     derKey.push_back(derKeyBuffer[i]);
 
-  auto *async = new rsa::SignSHA256(callback, std::move(data), std::move(derKey));
+  auto *async = new rsa::Sign(callback, std::move(data), std::move(derKey), signFunc);
   async->Queue();
 }
 
-void RSA_VerifySHA256(const Napi::CallbackInfo &info)
+void RSA_Verify(const Napi::CallbackInfo &info, rsa::RsaVerifyFunction verify)
 {
   const auto sigBuffer = info[0].As<Napi::Buffer<uint8_t>>();
   const auto dataBuffer = info[1].As<Napi::Buffer<uint8_t>>();
@@ -82,8 +84,20 @@ void RSA_VerifySHA256(const Napi::CallbackInfo &info)
   for(size_t i = 0; i < derKeyBuffer.ByteLength(); ++i)
     derKey.push_back(derKeyBuffer[i]);
 
-  auto *async = new rsa::VerifySHA256(callback, std::move(sig), std::move(data), std::move(derKey));
+  auto *async = new rsa::Verify(callback, std::move(sig), std::move(data), std::move(derKey), verify);
   async->Queue();
+}
+
+} // internal
+  
+void RSA_SignSHA256(const Napi::CallbackInfo &info)
+{
+  internal::RSA_Sign(info, so::rsa::signSha256); 
+}
+
+void RSA_VerifySHA256(const Napi::CallbackInfo &info)
+{
+  internal::RSA_Verify(info, so::rsa::verifySha256Signature); 
 }
 
 Napi::String GetOpenSSLVersion(const Napi::CallbackInfo &info)

@@ -150,15 +150,19 @@ private:
 };
 
 
-class SignSHA256 : public Napi::AsyncWorker
+using RsaSignFunction = decltype(&so::rsa::signSha1);
+using RsaVerifyFunction = decltype(&so::rsa::verifySha1Signature);
+
+class Sign : public Napi::AsyncWorker
 {
   so::Bytes m_data;
   so::Bytes m_derKey;
   so::Bytes m_signature;
+  RsaSignFunction m_func;
 
 public:
-  SignSHA256(Napi::Function &callback, so::Bytes derData, so::Bytes derKey)
-    : AsyncWorker(callback), m_data{std::move(derData)}, m_derKey{std::move(derKey)}
+  Sign(Napi::Function &callback, so::Bytes derData, so::Bytes derKey, RsaSignFunction func)
+    : AsyncWorker(callback), m_data{std::move(derData)}, m_derKey{std::move(derKey)}, m_func{func}
   {}
 
   void Execute() override
@@ -170,7 +174,7 @@ public:
       return;
     }
 
-    auto signature = so::rsa::signSha256(m_data, *key.value);
+    auto signature = m_func(m_data, *key.value);
     if(!signature)
       AsyncWorker::SetError(signature.msg());
     else
@@ -188,16 +192,17 @@ public:
   }
 };
 
-class VerifySHA256 : public Napi::AsyncWorker
+class Verify : public Napi::AsyncWorker
 {
   so::Bytes m_signature;
   so::Bytes m_data;
   so::Bytes m_derKey;
   bool m_result{false};
+  RsaVerifyFunction m_verify;
 
 public:
-  VerifySHA256(Napi::Function &callback, so::Bytes signature, so::Bytes data, so::Bytes derKey)
-    : AsyncWorker(callback), m_signature{std::move(signature)}, m_data{std::move(data)}, m_derKey{std::move(derKey)}
+  Verify(Napi::Function &callback, so::Bytes signature, so::Bytes data, so::Bytes derKey, RsaVerifyFunction verify)
+    : AsyncWorker(callback), m_signature{std::move(signature)}, m_data{std::move(data)}, m_derKey{std::move(derKey)}, m_verify{verify}
   {}
 
   void Execute() override
@@ -209,7 +214,7 @@ public:
       return;
     }
 
-    auto verify = so::rsa::verifySha256Signature(m_signature, m_data, *key.value);
+    auto verify = m_verify(m_signature, m_data, *key.value);
     if(!verify)
       AsyncWorker::SetError(verify.msg());
     else
