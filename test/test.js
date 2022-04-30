@@ -3,6 +3,8 @@
 const async_crypto = require('../index.js');
 const rsa = async_crypto.rsa;
 
+const node_crypto = require('crypto');
+
 async_crypto.init();
 
 function cleanup(err, eventType) {
@@ -147,4 +149,34 @@ rsa.createKey(1234, function(err, key) {
   
 })
 
+console.time("rsaCreateKeyNODEJS");
+node_crypto.generateKeyPair('rsa', {
+  modulusLength: 3072,
+  publicKeyEncoding: {
+    type: 'pkcs1',
+    format: 'der'
+  },
+  privateKeyEncoding: {
+    type: 'pkcs1',
+    format: 'der'
+  }
+  },
+  (err, publicKey, privateKey) => {
+    if(err)
+      console.log(err);
+    else
+    {
+      console.timeEnd("rsaCreateKeyNODEJS");
+    }
+  }
 
+);
+
+console.time("rsaCreateKeyASYNC")
+rsa.createKey(3072, (err, privKey) => {
+  if(err)
+    console.log(err);
+  else
+    console.timeEnd("rsaCreateKeyASYNC");
+
+});
