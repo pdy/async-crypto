@@ -14,21 +14,6 @@ void CleanupOSSL(const Napi::CallbackInfo &/*info*/)
   so::cleanUp();
 }
 
-void ReverseByteBuffer(const Napi::CallbackInfo &info)
-{
-  auto byteBuffer = info[0].As<Napi::Buffer<uint8_t>>();
-  Napi::Function callback = info[1].As<Napi::Function>(); 
-
-  auto buffer = std::make_unique<uint8_t[]>(byteBuffer.ByteLength());
-  for(size_t i = 0; i < byteBuffer.ByteLength(); ++i)
-  {
-    buffer[i] = byteBuffer[i];
-  }
-
-  auto *async = new BufferReverseAsync(callback, std::move(buffer), byteBuffer.ByteLength());
-  async->Queue();
-}
-
 void RSA_CreateKey(const Napi::CallbackInfo &info)
 {
   const int keyBits = info[0].As<Napi::Number>();
@@ -112,8 +97,6 @@ Napi::Object init(Napi::Env env, Napi::Object exports)
   exports.Set(Napi::String::New(env, "cleanup"), Napi::Function::New(env, CleanupOSSL));
 
   exports.Set(Napi::String::New(env, "getOpenSSLVersion"), Napi::Function::New(env, GetOpenSSLVersion));
-  
-  exports.Set(Napi::String::New(env, "reverseByteBuffer"), Napi::Function::New(env, ReverseByteBuffer));
   
   exports.Set(Napi::String::New(env, "rsa_createKey"), Napi::Function::New(env, RSA_CreateKey));
   exports.Set(Napi::String::New(env, "rsa_pemPrivKeyToDer"), Napi::Function::New(env, RSA_PemPrivKeyToDer));
