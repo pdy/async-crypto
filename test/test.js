@@ -91,17 +91,17 @@ rsa.key.pemPrivToDer(pemExample, function(err, retBuffer) {
 const buffer = Buffer.from([1,2,3,4,5,6,7]);
 
 console.time("signVerifyCreateKey");
-rsa.key.create(Number(3072), function(err, privKey, pubKey){
+rsa.key.create(Number(3072), (err, privKey, pubKey) => {
   if(err)
     console.log("CreateKey error: " + err);
   else
   {
-    rsa.signSHA256(buffer, privKey, function(err, signed) {
+    rsa.signSHA256(buffer, privKey, (err, signed) => {
       if(err)
         console.log("Sign ERROR: " + err)
       else
       {
-        rsa.verifySHA256(signed, buffer, pubKey, function(err, verified) {
+        rsa.verifySHA256(signed, buffer, pubKey, (err, verified) => {
           if(err)
             console.log("Verify ERROR: " + err)
           else
