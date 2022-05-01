@@ -1,5 +1,7 @@
 'use strict'
 
+var assert = require('assert');
+
 const async_crypto = require('../index.js');
 const rsa = async_crypto.rsa;
 
@@ -86,7 +88,6 @@ rsa.key.pemPrivToDer(pemExample, function(err, retBuffer) {
     });    
   }
 });
-*/
 
 const buffer = Buffer.from([1,2,3,4,5,6,7]);
 
@@ -145,4 +146,14 @@ rsa.key.create(3072, (err, privKey, pubKey) => {
   else
     console.timeEnd("rsaCreateKeyASYNC");
 
+});
+
+*/
+
+describe('Array', function () {
+  describe('#indexOf()', function () {
+    it('should return -1 when the value is not present', function () {
+      assert.equal([1, 2, 3].indexOf(4), -1);
+    });
+  });
 });

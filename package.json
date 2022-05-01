@@ -4,7 +4,7 @@
   "description": "WIP nodejs async crypto addon",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/_mocha",
     "install": "node-gyp rebuild"
   },
   "repository": {
@@ -27,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/pdy/async-crypto/issues"
   },
-  "homepage": "https://github.com/pdy/async-crypto#readme"
+  "homepage": "https://github.com/pdy/async-crypto#readme",
+  "devDependencies": {
+    "mocha": "^10.0.0"
+  }
 }
