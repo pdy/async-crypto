@@ -1,0 +1,3 @@
+[submodule "src/simpleopenssl"]
+	path = src/simpleopenssl
+	url = https://github.com/pdy/simpleopenssl.git
