@@ -5,8 +5,6 @@
 
 #include "async_workers.cpp"
 
-namespace internal {
-
 so::Bytes toSoBytes(const Napi::Buffer<uint8_t> &buff)
 {
   so::Bytes ret; ret.reserve(buff.ByteLength());
@@ -15,6 +13,8 @@ so::Bytes toSoBytes(const Napi::Buffer<uint8_t> &buff)
 
   return ret;
 }
+
+namespace internal {
 
 void RSA_Sign(const Napi::CallbackInfo &info, rsa::RsaSignFunction signFunc)
 {
@@ -44,14 +44,38 @@ void RSA_Sign(const Napi::CallbackInfo &info, rsa::RsaSignFunction signFunc)
   async->Queue();
 }
 
-void RSA_Verify(const Napi::CallbackInfo &info, rsa::RsaVerifyFunction verify)
+void RSA_Verify(const Napi::CallbackInfo &info, rsa::RsaVerifyFunction verifyFunc)
 {
+  if(!info[0].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::verify: signature not a buffer").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if(!info[1].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::verify: data not a buffer").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if(!info[2].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::verify: derKey not a buffer").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if(!info[3].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::sign: callback not function").ThrowAsJavaScriptException();
+    return;
+  }
+
   auto sig = toSoBytes(info[0].As<Napi::Buffer<uint8_t>>());
   auto data = toSoBytes(info[1].As<Napi::Buffer<uint8_t>>());
   auto derKey = toSoBytes(info[2].As<Napi::Buffer<uint8_t>>());
   auto callback = info[3].As<Napi::Function>();
   
-  auto *async = new rsa::Verify(callback, std::move(sig), std::move(data), std::move(derKey), verify);
+  auto *async = new rsa::Verify(callback, std::move(sig), std::move(data), std::move(derKey), verifyFunc);
   async->Queue();
 }
 
@@ -91,6 +115,18 @@ void RSA_CreateKey(const Napi::CallbackInfo &info)
 
 void RSA_PemPrivKeyToDer(const Napi::CallbackInfo &info)
 {
+  if(!info[0].IsString())
+  {
+    Napi::Error::New(info.Env(), "rsa::pemPrivKeyToDer: pemPriv not a string").ThrowAsJavaScriptException();
+    return;
+  }
+  
+  if(!info[1].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::pemPrivKeyToDer: callback not a function").ThrowAsJavaScriptException();
+    return;
+  }
+
   std::string pemPriv = info[0].As<Napi::String>();
   Napi::Function callback = info[1].As<Napi::Function>();
 
@@ -100,13 +136,21 @@ void RSA_PemPrivKeyToDer(const Napi::CallbackInfo &info)
 
 void RSA_DerPrivKeyToPem(const Napi::CallbackInfo &info)
 {
-  const auto byteBuffer = info[0].As<Napi::Buffer<uint8_t>>();
+  if(!info[0].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::derPrivKeyToPem: derPriv not a string").ThrowAsJavaScriptException();
+    return;
+  }
+  
+  if(!info[1].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::derPrivKeyToPem: callback not a function").ThrowAsJavaScriptException();
+    return;
+  }
+
+  auto der = toSoBytes(info[0].As<Napi::Buffer<uint8_t>>());
   auto callback = info[1].As<Napi::Function>();
 
-  so::Bytes der; der.reserve(byteBuffer.ByteLength());
-  for(size_t i = 0; i < byteBuffer.ByteLength(); ++i)
-    der.push_back(byteBuffer[i]);
-  
   auto *async = new rsa::DerPrivToPemAsync(callback, std::move(der));
   async->Queue();
 }

@@ -58,7 +58,7 @@ Y2kbAg8eJAZvFEQgvaQWLivUBWUZLkGzA9X074r01zabgSs7HV9arJ+a0QK9a0pP
 wRD+npnS9L4rG/qFzu8/lzkzthfJPV2o3O2WBQhDz8Kup56LB8Iuxg==
 -----END RSA PRIVATE KEY-----
 `
-
+/*
 console.time("conversionTime");
 rsa.key.pemPrivToDer(pemExample, function(err, retBuffer) {
   if(err)
@@ -86,9 +86,7 @@ rsa.key.pemPrivToDer(pemExample, function(err, retBuffer) {
     });    
   }
 });
-
-console.log("OpenSSL version: " + async_crypto.getOpenSSLVersion());
-
+*/
 
 const buffer = Buffer.from([1,2,3,4,5,6,7]);
 
@@ -117,14 +115,6 @@ rsa.key.create(Number(3072), function(err, privKey, pubKey){
   }
 });
 
-rsa.key.create(1234, function(err, key) {
-  if(err)
-    console.log("CreateKey error: " + err);
-  else
-    console.log("FAIL, succeded but should return error");
-  
-});
-
 console.time("rsaCreateKeyNODEJS");
 node_crypto.generateKeyPair('rsa', {
   modulusLength: 3072,
@@ -149,7 +139,7 @@ node_crypto.generateKeyPair('rsa', {
 );
 
 console.time("rsaCreateKeyASYNC")
-rsa.createKey(3072, (err, privKey, pubKey) => {
+rsa.key.create(3072, (err, privKey, pubKey) => {
   if(err)
     console.log(err);
   else
