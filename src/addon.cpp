@@ -1,8 +1,62 @@
 #include <napi.h>
 #include <vector>
 #include <memory>
+#include <optional>
 
 #include "async_workers.cpp"
+
+namespace internal {
+
+so::Bytes toSoBytes(const Napi::Buffer<uint8_t> &buff)
+{
+  so::Bytes ret; ret.reserve(buff.ByteLength());
+  for(size_t i = 0; i < buff.ByteLength(); ++i)
+    ret.push_back(buff[i]);
+
+  return ret;
+}
+
+void RSA_Sign(const Napi::CallbackInfo &info, rsa::RsaSignFunction signFunc)
+{
+  if(!info[0].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::sign: data not a buffer").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if(!info[1].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::sign: derKey not a buffer").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if(!info[2].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::sign: callback not function").ThrowAsJavaScriptException();
+    return;
+  }
+
+  auto data = toSoBytes(info[0].As<Napi::Buffer<uint8_t>>());
+  auto derKey = toSoBytes(info[1].As<Napi::Buffer<uint8_t>>());
+  auto callback = info[2].As<Napi::Function>();
+
+  auto *async = new rsa::Sign(callback, std::move(data), std::move(derKey), signFunc);
+  async->Queue();
+}
+
+void RSA_Verify(const Napi::CallbackInfo &info, rsa::RsaVerifyFunction verify)
+{
+  auto sig = toSoBytes(info[0].As<Napi::Buffer<uint8_t>>());
+  auto data = toSoBytes(info[1].As<Napi::Buffer<uint8_t>>());
+  auto derKey = toSoBytes(info[2].As<Napi::Buffer<uint8_t>>());
+  auto callback = info[3].As<Napi::Function>();
+  
+  auto *async = new rsa::Verify(callback, std::move(sig), std::move(data), std::move(derKey), verify);
+  async->Queue();
+}
+
+} // internal
+
 
 void InitOSSL(const Napi::CallbackInfo &/*info*/)
 {
@@ -15,7 +69,19 @@ void CleanupOSSL(const Napi::CallbackInfo &/*info*/)
 }
 
 void RSA_CreateKey(const Napi::CallbackInfo &info)
-{
+{ 
+  if(!info[0].IsNumber())
+  {
+    Napi::Error::New(info.Env(), "rsa::createKey: keyBits not a number").ThrowAsJavaScriptException();
+    return;
+  }
+  
+  if(!info[1].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::createKey: callback not a function").ThrowAsJavaScriptException();
+    return;
+  }
+  
   const int keyBits = info[0].As<Napi::Number>();
   auto cb = info[1].As<Napi::Function>();
 
@@ -44,51 +110,6 @@ void RSA_DerPrivKeyToPem(const Napi::CallbackInfo &info)
   auto *async = new rsa::DerPrivToPemAsync(callback, std::move(der));
   async->Queue();
 }
-
-namespace internal {
-
-void RSA_Sign(const Napi::CallbackInfo &info, rsa::RsaSignFunction signFunc)
-{
-  const auto dataBuffer = info[0].As<Napi::Buffer<uint8_t>>();
-  const auto derKeyBuffer = info[1].As<Napi::Buffer<uint8_t>>();
-  auto callback = info[2].As<Napi::Function>();
-
-  so::Bytes data; data.reserve(dataBuffer.ByteLength());
-  for(size_t i = 0; i < dataBuffer.ByteLength(); ++i)
-    data.push_back(dataBuffer[i]);
-
-  so::Bytes derKey; derKey.reserve(derKeyBuffer.ByteLength());
-  for(size_t i = 0; i < derKeyBuffer.ByteLength(); ++i)
-    derKey.push_back(derKeyBuffer[i]);
-
-  auto *async = new rsa::Sign(callback, std::move(data), std::move(derKey), signFunc);
-  async->Queue();
-}
-
-void RSA_Verify(const Napi::CallbackInfo &info, rsa::RsaVerifyFunction verify)
-{
-  const auto sigBuffer = info[0].As<Napi::Buffer<uint8_t>>();
-  const auto dataBuffer = info[1].As<Napi::Buffer<uint8_t>>();
-  const auto derKeyBuffer = info[2].As<Napi::Buffer<uint8_t>>();
-  auto callback = info[3].As<Napi::Function>();
-  
-  so::Bytes sig; sig.reserve(sigBuffer.ByteLength());
-  for(size_t i = 0; i < sigBuffer.ByteLength(); ++i)
-    sig.push_back(sigBuffer[i]);
-  
-  so::Bytes data; data.reserve(dataBuffer.ByteLength());
-  for(size_t i = 0; i < dataBuffer.ByteLength(); ++i)
-    data.push_back(dataBuffer[i]);
-
-  so::Bytes derKey; derKey.reserve(derKeyBuffer.ByteLength());
-  for(size_t i = 0; i < derKeyBuffer.ByteLength(); ++i)
-    derKey.push_back(derKeyBuffer[i]);
-
-  auto *async = new rsa::Verify(callback, std::move(sig), std::move(data), std::move(derKey), verify);
-  async->Queue();
-}
-
-} // internal
   
 void RSA_SignSHA256(const Napi::CallbackInfo &info)
 {

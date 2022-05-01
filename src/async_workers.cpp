@@ -18,7 +18,8 @@ namespace rsa {
 class CreateKey : public Napi::AsyncWorker
 {
   int m_keyBits;
-  so::Bytes m_keyDer;
+  so::Bytes m_privDer;
+  so::Bytes m_pubDer;
 
 public:
   CreateKey(Napi::Function &cb, int keyBits)
@@ -48,7 +49,15 @@ public:
       return;
     }
 
-    m_keyDer = der.moveValue();
+    auto pub = so::rsa::convertPubKeyToDer(*key.value);
+    if(!pub)
+    {
+      AsyncWorker::SetError(pub.msg());
+      return;
+    }
+
+    m_privDer = der.moveValue();
+    m_pubDer = pub.moveValue();
   }
 
   void OnOK() override
@@ -57,7 +66,8 @@ public:
 
     Callback().Call({
       Env().Null(),
-      Napi::Buffer<uint8_t>::Copy(Env(), m_keyDer.data(), m_keyDer.size())
+      Napi::Buffer<uint8_t>::Copy(Env(), m_privDer.data(), m_privDer.size()),
+      Napi::Buffer<uint8_t>::Copy(Env(), m_pubDer.data(), m_pubDer.size())
     });
   }
 
@@ -65,8 +75,12 @@ public:
 
 class PemPrivKeyToDerAsync : public Napi::AsyncWorker
 {
+  std::string m_pem;
+  std::unique_ptr<uint8_t[]> m_outDer;
+  size_t m_size;
+
 public:
-  PemPrivKeyToDerAsync(Napi::Function &callback, std::string pem)
+  PemPrivKeyToDerAsync(Napi::Function &callback, std::string &&pem)
     : AsyncWorker(callback), m_pem{std::move(pem)}, m_outDer{nullptr}
   {}
 
@@ -105,17 +119,15 @@ public:
             "PemPrivKeyToDerAsync")
     });
   }
-
-private:
-  std::string m_pem;
-  std::unique_ptr<uint8_t[]> m_outDer;
-  size_t m_size;
 };
 
 class DerPrivToPemAsync : public Napi::AsyncWorker
 {
+  so::Bytes m_inDer;
+  std::string m_pem;
+
 public:
-  DerPrivToPemAsync(Napi::Function &callback, so::Bytes der)
+  DerPrivToPemAsync(Napi::Function &callback, so::Bytes &&der)
     : AsyncWorker(callback), m_inDer{std::move(der)} 
   {}
 
@@ -143,10 +155,6 @@ public:
         Napi::String::New(Env(), m_pem) 
     });
   }
-
-private:
-  so::Bytes m_inDer;
-  std::string m_pem;
 };
 
 
@@ -161,7 +169,7 @@ class Sign : public Napi::AsyncWorker
   RsaSignFunction m_func;
 
 public:
-  Sign(Napi::Function &callback, so::Bytes derData, so::Bytes derKey, RsaSignFunction func)
+  Sign(Napi::Function &callback, so::Bytes &&derData, so::Bytes &&derKey, RsaSignFunction func)
     : AsyncWorker(callback), m_data{std::move(derData)}, m_derKey{std::move(derKey)}, m_func{func}
   {}
 
@@ -207,7 +215,7 @@ public:
 
   void Execute() override
   {
-    auto key = so::rsa::convertDerToPrivKey(m_derKey);
+    auto key = so::rsa::convertDerToPubKey(m_derKey);
     if(!key)
     {
       AsyncWorker::SetError(key.msg());

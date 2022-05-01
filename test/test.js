@@ -60,7 +60,7 @@ wRD+npnS9L4rG/qFzu8/lzkzthfJPV2o3O2WBQhDz8Kup56LB8Iuxg==
 `
 
 console.time("conversionTime");
-rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
+rsa.key.pemPrivToDer(pemExample, function(err, retBuffer) {
   if(err)
     console.log(err)
   else
@@ -70,7 +70,7 @@ rsa.pemPrivKeyToDer(pemExample, function(err, retBuffer) {
 
     
     console.log("Reverting DER back to PEM");
-    rsa.derPrivKeyToPem(retBuffer, function(err, pem) {
+    rsa.key.derPrivToPem(retBuffer, function(err, pem) {
       if(err)
         console.log(err);
       else
@@ -91,43 +91,19 @@ console.log("OpenSSL version: " + async_crypto.getOpenSSLVersion());
 
 
 const buffer = Buffer.from([1,2,3,4,5,6,7]);
-rsa.pemPrivKeyToDer(pemExample, function(err, der){
-  if(err)
-    console.log("To DER error" + err);
-  else
-  {
-    console.time("signVerifyPEMKey");
-    rsa.signSHA256(buffer, der, function(err, signed) {
-      if(err)
-        console.log("Sign ERROR: " + err)
-      else
-      {
-        rsa.verifySHA256(signed, buffer, der, function(err, verified) {
-          if(err)
-            console.log("Verify ERROR: " + err)
-          else
-          {
-            console.log("verified: " + verified);
-            console.timeEnd("signVerifyPEMKey");
-          }
-        });
-      }
-    });
-  }
-});
 
 console.time("signVerifyCreateKey");
-rsa.createKey(Number(3072), function(err, key){
+rsa.key.create(Number(3072), function(err, privKey, pubKey){
   if(err)
     console.log("CreateKey error: " + err);
   else
   {
-    rsa.signSHA256(buffer, key, function(err, signed) {
+    rsa.signSHA256(buffer, privKey, function(err, signed) {
       if(err)
         console.log("Sign ERROR: " + err)
       else
       {
-        rsa.verifySHA256(signed, buffer, key, function(err, verified) {
+        rsa.verifySHA256(signed, buffer, pubKey, function(err, verified) {
           if(err)
             console.log("Verify ERROR: " + err)
           else
@@ -141,13 +117,13 @@ rsa.createKey(Number(3072), function(err, key){
   }
 });
 
-rsa.createKey(1234, function(err, key) {
+rsa.key.create(1234, function(err, key) {
   if(err)
-    console.log("CreateKey error" + err);
+    console.log("CreateKey error: " + err);
   else
     console.log("FAIL, succeded but should return error");
   
-})
+});
 
 console.time("rsaCreateKeyNODEJS");
 node_crypto.generateKeyPair('rsa', {
@@ -173,7 +149,7 @@ node_crypto.generateKeyPair('rsa', {
 );
 
 console.time("rsaCreateKeyASYNC")
-rsa.createKey(3072, (err, privKey) => {
+rsa.createKey(3072, (err, privKey, pubKey) => {
   if(err)
     console.log(err);
   else
