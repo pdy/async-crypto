@@ -15,7 +15,8 @@
     "crypto",
     "addon",
     "async",
-    "async-crypto"
+    "async-crypto",
+    "openssl"
   ],
   "author": "Pawel Drzycimski",
   "license": "MIT",
