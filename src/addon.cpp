@@ -3,7 +3,7 @@
 #include <memory>
 #include <optional>
 
-#include "async_workers.cpp"
+#include "rsa.cpp"
 
 so::Bytes toSoBytes(const Napi::Buffer<uint8_t> &buff)
 {
