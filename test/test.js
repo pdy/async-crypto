@@ -270,11 +270,24 @@ describe('RSA Key', function () {
     it('should succeed with correct key', function (done) {
     
       rsa.key.pemPrivToDer(RSA_PEM_PRIV, (err, der) => {
-        assert.equal(err, null, err);
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(der), "Converted DER not a buffer");
         assert.ok(der.equals(RSA_DER_PRIV), "Converted DER not equal to expected");
         done();
       });
 
     });
+
+    it('should fail with public key', function (done) {
+    
+      rsa.key.pemPrivToDer(RSA_PEM_PUB, (err, der) => {
+        assert.ok(err, "Returned err should not be null"); 
+        assert.equal(der, undefined, "Returned der not a undefined");
+        done();
+      });
+
+    });
+
+
   });
 });

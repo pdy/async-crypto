@@ -65,7 +65,7 @@ public:
     Napi::HandleScope scope(Env());
 
     Callback().Call({
-      Env().Null(),
+      Env().Undefined(),
       Napi::Buffer<uint8_t>::Copy(Env(), m_privDer.data(), m_privDer.size()),
       Napi::Buffer<uint8_t>::Copy(Env(), m_pubDer.data(), m_pubDer.size())
     });
@@ -110,7 +110,7 @@ public:
     Napi::HandleScope scope(Env()); 
 
     Callback().Call({
-        Env().Null(),
+        Env().Undefined(),
         Napi::Buffer<uint8_t>::New(
             Env(),
             m_outDer.release(),
@@ -151,7 +151,7 @@ public:
     Napi::HandleScope scope(Env()); 
 
     Callback().Call({
-        Env().Null(),
+        Env().Undefined(),
         Napi::String::New(Env(), m_pem) 
     });
   }
@@ -194,7 +194,7 @@ public:
     Napi::HandleScope scope(Env());
 
     Callback().Call({
-      Env().Null(),
+      Env().Undefined(),
       Napi::Buffer<uint8_t>::Copy(Env(), m_signature.data(), m_signature.size())
     });
   }
@@ -234,7 +234,7 @@ public:
     Napi::HandleScope scope(Env());
 
     Callback().Call({
-      Env().Null(),
+      Env().Undefined(),
       Napi::Boolean::New(Env(), m_result)
     });
   }
