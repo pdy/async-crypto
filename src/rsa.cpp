@@ -164,6 +164,77 @@ public:
   }
 };
 
+class PemPubToDerAsync : public Napi::AsyncWorker
+{
+  std::string m_pem;
+  so::Bytes m_der;
+
+public:
+  PemPubToDerAsync(Napi::Function &cb, std::string &&pem)
+    : AsyncWorker(cb), m_pem{std::move(pem)}
+  {}
+
+  void Execute() override
+  {
+    auto key = ::so::rsa::convertPemToPubKey(m_pem);
+    if(!key)
+      AsyncWorker::SetError(key.msg());
+    else
+    {
+      auto der = ::so::rsa::convertPrivKeyToDer(*key.value);
+      if(!der)
+        AsyncWorker::SetError(der.msg());
+      else
+        m_der = der.moveValue();
+    }
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env());
+
+    Callback().Call({
+      Env().Undefined(),
+      Napi::Buffer<uint8_t>::Copy(Env(), m_der.data(), m_der.size())
+    });
+  }
+};
+
+class DerPubToPemAsync : public Napi::AsyncWorker
+{
+  so::Bytes m_inDer;
+  std::string m_pem;
+
+public:
+  DerPubToPemAsync(Napi::Function &callback, so::Bytes &&der)
+    : AsyncWorker(callback), m_inDer{std::move(der)}
+  {}
+
+  void Execute() override
+  {
+    const auto result = so::rsa::convertDerToPubKey(m_inDer);
+    if(!result)
+      AsyncWorker::SetError(result.msg());
+    else
+    {
+      auto pem = so::rsa::convertPubKeyToPem(*result.value);
+      if(!pem)
+        AsyncWorker::SetError(pem.msg());
+      else
+        m_pem = pem.moveValue();
+    }
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env());
+
+    Callback().Call({
+        Env().Undefined(),
+        Napi::String::New(Env(), m_pem)
+    });
+  }
+};
 
 using RsaSignFunction = decltype(&so::rsa::signSha1);
 using RsaVerifyFunction = decltype(&so::rsa::verifySha1Signature);
@@ -376,7 +447,49 @@ void derPrivKeyToPem(const Napi::CallbackInfo &info)
   auto *async = new rsa::DerPrivToPemAsync(callback, std::move(der));
   async->Queue();
 }
+
+void pemPubKeyToDer(const Napi::CallbackInfo &info)
+{
+  if(!info[0].IsString())
+  {
+    Napi::Error::New(info.Env(), "rsa::pemPubKeyToDer: pemPub not a string").ThrowAsJavaScriptException();
+    return;
+  }
   
+  if(!info[1].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::pemPubKeyToDer: callback not a function").ThrowAsJavaScriptException();
+    return;
+  }
+
+  std::string pemPub = info[0].As<Napi::String>();
+  Napi::Function callback = info[1].As<Napi::Function>();
+
+  auto *async = new rsa::PemPubToDerAsync(callback, std::move(pemPub));
+  async->Queue();
+} 
+
+void derPubKeyToPem(const Napi::CallbackInfo &info)
+{
+  if(!info[0].IsBuffer())
+  {
+    Napi::Error::New(info.Env(), "rsa::derPubKeyToPem: derPub not a string").ThrowAsJavaScriptException();
+    return;
+  }
+  
+  if(!info[1].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::derPubKeyToPem: callback not a function").ThrowAsJavaScriptException();
+    return;
+  }
+
+  auto der = toSoBytes(info[0].As<Napi::Buffer<uint8_t>>());
+  auto callback = info[1].As<Napi::Function>();
+
+  auto *async = new rsa::DerPubToPemAsync(callback, std::move(der));
+  async->Queue();
+}
+
 void signSHA256(const Napi::CallbackInfo &info)
 {
   internal::SignTemplate(info, so::rsa::signSha256); 
