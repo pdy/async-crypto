@@ -2,6 +2,7 @@
 
 var assert = require('assert').strict;
 const data = require('./data.js');
+const test_utils = require('./utils.js');
 const async_crypto = require('../index.js');
 const rsa = async_crypto.rsa;
 
@@ -38,7 +39,11 @@ describe('RSA Key', function () {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
         assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
+        
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
       });
 
     });
