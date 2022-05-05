@@ -181,7 +181,7 @@ public:
       AsyncWorker::SetError(key.msg());
     else
     {
-      auto der = ::so::rsa::convertPrivKeyToDer(*key.value);
+      auto der = ::so::rsa::convertPubKeyToDer(*key.value);
       if(!der)
         AsyncWorker::SetError(der.msg());
       else

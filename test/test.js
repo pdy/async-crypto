@@ -287,6 +287,19 @@ describe('RSA Key', function () {
       });
 
     });
+  });
+
+  describe('#pemPubToDer()', function() {
+    it('should succeed with correct key', function(done) {
+
+      rsa.key.pemPubToDer(RSA_PEM_PUB, (err, der) => {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(der), "Converted DER not a buffer");
+        assert.ok(der.equals(RSA_DER_PUB), "Converted DER not equal o expected");
+        done();
+      });
+
+    });
 
 
   });
