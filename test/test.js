@@ -1,7 +1,7 @@
 'use strict'
 
 var assert = require('assert').strict;
-const DATA = require('./data.js');
+const data = require('./data.js');
 const async_crypto = require('../index.js');
 const rsa = async_crypto.rsa;
 
@@ -18,7 +18,75 @@ function cleanup(err, eventType) {
 
 describe('RSA Key', function () {
   describe('#createKey()', function () {
-  
+    
+    /* // this one takes a little too much time
+    it('7168 ok', function(done) {
+
+      rsa.key.create(7168, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+    */
+    
+    it('6144 ok', function(done) {
+
+      rsa.key.create(6144, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+
+    it('5120 ok', function(done) {
+
+      rsa.key.create(5120, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+
+    it('4096 ok', function(done) {
+
+      rsa.key.create(4096, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+    
+    it('2048 ok', function(done) {
+
+      rsa.key.create(2048, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+
+    it('1024 ok', function(done) {
+
+      rsa.key.create(1024, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+
     it('3072 ok', function(done) {
 
       rsa.key.create(3072, function(err, priv, pub) {
@@ -45,10 +113,10 @@ describe('RSA Key', function () {
   describe('#pemPrivToDer()', function () {
     it('should succeed with correct key', function (done) {
     
-      rsa.key.pemPrivToDer(DATA.RSA_PEM_PRIV, (err, der) => {
+      rsa.key.pemPrivToDer(data.RSA_PEM_PRIV, (err, der) => {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(der), "Converted DER not a buffer");
-        assert.ok(der.equals(DATA.RSA_DER_PRIV), "Converted DER not equal to expected");
+        assert.ok(der.equals(data.RSA_DER_PRIV), "Converted DER not equal to expected");
         done();
       });
 
@@ -56,7 +124,7 @@ describe('RSA Key', function () {
 
     it('should fail with public key', function (done) {
     
-      rsa.key.pemPrivToDer(DATA.RSA_PEM_PUB, (err, der) => {
+      rsa.key.pemPrivToDer(data.RSA_PEM_PUB, (err, der) => {
         assert.ok(err, "Returned err should not be null"); 
         assert.equal(der, undefined, "Returned der not a undefined");
         done();
@@ -68,10 +136,10 @@ describe('RSA Key', function () {
   describe('#pemPubToDer()', function() {
     it('should succeed with correct key', function(done) {
 
-      rsa.key.pemPubToDer(DATA.RSA_PEM_PUB, (err, der) => {
+      rsa.key.pemPubToDer(data.RSA_PEM_PUB, (err, der) => {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(der), "Converted DER not a buffer");
-        assert.ok(der.equals(DATA.RSA_DER_PUB), "Converted DER not equal o expected");
+        assert.ok(der.equals(data.RSA_DER_PUB), "Converted DER not equal o expected");
         done();
       });
 
@@ -79,7 +147,7 @@ describe('RSA Key', function () {
 
     it('should fail with priv key', function(done) {
       
-      rsa.key.pemPubToDer(DATA.RSA_PEM_PRIV, (err, der) => {
+      rsa.key.pemPubToDer(data.RSA_PEM_PRIV, (err, der) => {
         assert.ok(err, "Returned err should not be undefined");
         assert.equal(der, undefined, "Returned der not a undefine");
         done();
