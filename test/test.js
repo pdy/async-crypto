@@ -266,6 +266,31 @@ const RSA_DER_PUB = Buffer.from([
 
 
 describe('RSA Key', function () {
+  describe('#createKey()', function () {
+  
+    it('3072 ok', function(done) {
+
+      rsa.key.create(3072, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        done();
+      });
+
+    });
+    
+    it('3071 should return err', function(done) {
+
+      rsa.key.create(3071, function(err, priv, pub) {
+        assert.ok(err, "Returned err should not be undefined"); 
+        assert.equal(priv, undefined, "Returned priv not a undefined");
+        assert.equal(pub, undefined, "Returned pub not a undefined");
+        done();
+      });
+
+    });
+  });
+
   describe('#pemPrivToDer()', function () {
     it('should succeed with correct key', function (done) {
     
@@ -301,6 +326,15 @@ describe('RSA Key', function () {
 
     });
 
+    it('should fail with priv key', function(done) {
+      
+      rsa.key.pemPubToDer(RSA_PEM_PRIV, (err, der) => {
+        assert.ok(err, "Returned err should not be undefined");
+        assert.equal(der, undefined, "Returned der not a undefine");
+        done();
+      });
+
+    });
 
   });
 });
