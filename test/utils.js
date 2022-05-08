@@ -21,7 +21,7 @@ function rsaTestSignVerifyDER(priv, pub, cb){
   const pubKey = Crypto.createPublicKey({
     key: pub,
     format: 'der',
-    type: 'pkcs1'
+    type: 'spki'
   });
 
   if(!pubKey)
@@ -44,7 +44,6 @@ function rsaTestSignVerifyDER(priv, pub, cb){
 
   return cb(undefined);
 }
-
 
 module.exports = {
   rsaTestSignVerifyDER

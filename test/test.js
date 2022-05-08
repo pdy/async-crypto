@@ -21,25 +21,68 @@ describe('RSA Key', function () {
   describe('#createKey()', function () {
     
     /* // this one takes a little too much time
-    it('7168 ok', function(done) {
+    it('7168', function(done) {
 
       rsa.key.create(7168, function(err, priv, pub) {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
         assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
       });
 
-    });
-    */
+    }).timeout(8000);
     
-    it('6144 ok', function(done) {
+    it('6144', function(done) {
 
       rsa.key.create(6144, function(err, priv, pub) {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
         assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    }).timeout(4000);
+    */
+
+    it('5120', function(done) {
+
+      rsa.key.create(5120, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    }).timeout(4000);
+
+    it('4096', function(done) {
+
+      rsa.key.create(4096, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    });
+    it('2048', function(done) {
+
+      rsa.key.create(2048, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
+        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
         test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
           assert.equal(err, undefined, err);
           done();
@@ -48,57 +91,31 @@ describe('RSA Key', function () {
 
     });
 
-    it('5120 ok', function(done) {
-
-      rsa.key.create(5120, function(err, priv, pub) {
-        assert.equal(err, undefined, err);
-        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
-        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
-      });
-
-    });
-
-    it('4096 ok', function(done) {
-
-      rsa.key.create(4096, function(err, priv, pub) {
-        assert.equal(err, undefined, err);
-        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
-        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
-      });
-
-    });
-    
-    it('2048 ok', function(done) {
-
-      rsa.key.create(2048, function(err, priv, pub) {
-        assert.equal(err, undefined, err);
-        assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
-        assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
-      });
-
-    });
-
-    it('1024 ok', function(done) {
+    it('1024', function(done) {
 
       rsa.key.create(1024, function(err, priv, pub) {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
         assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
       });
 
     });
 
-    it('3072 ok', function(done) {
+    it('3072', function(done) {
 
       rsa.key.create(3072, function(err, priv, pub) {
         assert.equal(err, undefined, err);
         assert.ok(Buffer.isBuffer(priv), "Private key not a buffer");
         assert.ok(Buffer.isBuffer(pub), "Public key not a buffer");
-        done();
+        test_utils.rsaTestSignVerifyDER(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+
       });
 
     });
