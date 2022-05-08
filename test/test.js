@@ -132,6 +132,91 @@ describe('RSA Key', function () {
     });
   });
 
+  describe('#createKeyPem()', function () {
+    
+    
+    it('5120', function(done) {
+
+      rsa.key.createPem(5120, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(typeof priv === 'string', "Private key not a string");
+        assert.ok(typeof pub === 'string', "Public key not a string");
+        test_utils.rsaTestSignVerifyPEM(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    }).timeout(4000);
+
+    it('4096', function(done) {
+
+      rsa.key.createPem(4096, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(typeof priv === 'string', "Private key not a string");
+        assert.ok(typeof pub === 'string', "Public key not a string");
+        test_utils.rsaTestSignVerifyPEM(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    });
+
+    it('2048', function(done) {
+
+      rsa.key.createPem(2048, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(typeof priv === 'string', "Private key not a string");
+        assert.ok(typeof pub === 'string', "Public key not a string");
+        test_utils.rsaTestSignVerifyPEM(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    });
+
+    it('1024', function(done) {
+
+      rsa.key.createPem(1024, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(typeof priv === 'string', "Private key not a string");
+        assert.ok(typeof pub === 'string', "Public key not a string");
+        test_utils.rsaTestSignVerifyPEM(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    });
+
+    it('3072', function(done) {
+
+      rsa.key.createPem(3072, function(err, priv, pub) {
+        assert.equal(err, undefined, err);
+        assert.ok(typeof priv === 'string', "Private key not a string");
+        assert.ok(typeof pub === 'string', "Public key not a string");
+        test_utils.rsaTestSignVerifyPEM(priv, pub, (err) => {
+          assert.equal(err, undefined, err);
+          done();
+        });
+      });
+
+    });
+    
+    it('3071 should return err', function(done) {
+
+      rsa.key.createPem(3071, function(err, priv, pub) {
+        assert.ok(err, "Returned err should not be undefined"); 
+        assert.equal(priv, undefined, "Returned priv not a undefined");
+        assert.equal(pub, undefined, "Returned pub not a undefined");
+        done();
+      });
+
+    });
+  });
+
   describe('#pemPrivToDer()', function () {
     it('should succeed with correct key', function (done) {
     

@@ -49,10 +49,10 @@ public:
       return;
     }
 
-    auto der = so::rsa::convertPrivKeyToDer(*key.value);
-    if(!der)
+    auto priv = so::rsa::convertPrivKeyToDer(*key.value);
+    if(!priv)
     {
-      AsyncWorker::SetError(der.msg());
+      AsyncWorker::SetError(priv.msg());
       return;
     }
 
@@ -63,7 +63,7 @@ public:
       return;
     }
 
-    m_privDer = der.moveValue();
+    m_privDer = priv.moveValue();
     m_pubDer = pub.moveValue();
   }
 
@@ -75,6 +75,64 @@ public:
       Env().Undefined(),
       Napi::Buffer<uint8_t>::Copy(Env(), m_privDer.data(), m_privDer.size()),
       Napi::Buffer<uint8_t>::Copy(Env(), m_pubDer.data(), m_pubDer.size())
+    });
+  }
+
+};
+
+class CreateKeyPem : public Napi::AsyncWorker
+{
+  int m_keyBits;
+  std::string m_priv;
+  std::string m_pub;
+
+public:
+  CreateKeyPem(Napi::Function &cb, int keyBits)
+    : AsyncWorker(cb), m_keyBits{keyBits}
+  {}
+
+  void Execute() override
+  {
+    static constexpr int ALLOWED_KEY_BYTES[] = {1024, 2048, 3072, 4096, 5120, 6144, 7168};
+    if(!std::any_of(std::begin(ALLOWED_KEY_BYTES), std::end(ALLOWED_KEY_BYTES), [&](int val){ return val == m_keyBits; }))
+    {
+      AsyncWorker::SetError("Incorrect key bits value. Allowed values 1024, 2048, 3072, 4096, 5120, 6144, 7168");
+      return;
+    }
+
+    auto key = so::rsa::create(static_cast<so::rsa::KeyBits>(m_keyBits), so::rsa::Exponent::_65537_);
+    if(!key)
+    {
+      AsyncWorker::SetError(key.msg());
+      return;
+    }
+
+    auto priv = so::rsa::convertPrivKeyToPem(*key.value);
+    if(!priv)
+    {
+      AsyncWorker::SetError(priv.msg());
+      return;
+    }
+
+    auto pub = so::rsa::convertPubKeyToPem(*key.value);
+    if(!pub)
+    {
+      AsyncWorker::SetError(pub.msg());
+      return;
+    }
+
+    m_priv = priv.moveValue();
+    m_pub= pub.moveValue();
+  }
+
+  void OnOK() override
+  {
+    Napi::HandleScope scope(Env());
+
+    Callback().Call({
+      Env().Undefined(),
+      Napi::String::New(Env(), m_priv), 
+      Napi::String::New(Env(), m_pub)
     });
   }
 
@@ -403,6 +461,27 @@ void createKey(const Napi::CallbackInfo &info)
   auto cb = info[1].As<Napi::Function>();
 
   auto *async = new ::rsa::CreateKey(cb, keyBits);
+  async->Queue();
+}
+
+void createKeyPEM(const Napi::CallbackInfo &info)
+{ 
+  if(!info[0].IsNumber())
+  {
+    Napi::Error::New(info.Env(), "rsa::createKey: keyBits not a number").ThrowAsJavaScriptException();
+    return;
+  }
+  
+  if(!info[1].IsFunction())
+  {
+    Napi::Error::New(info.Env(), "rsa::createKey: callback not a function").ThrowAsJavaScriptException();
+    return;
+  }
+  
+  const int keyBits = info[0].As<Napi::Number>();
+  auto cb = info[1].As<Napi::Function>();
+
+  auto *async = new ::rsa::CreateKeyPem(cb, keyBits);
   async->Queue();
 }
 

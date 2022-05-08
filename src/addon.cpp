@@ -30,6 +30,7 @@ Napi::Object init(Napi::Env env, Napi::Object exports)
   exports.Set(Napi::String::New(env, "getOpenSSLVersion"), Napi::Function::New(env, GetOpenSSLVersion));
   
   exports.Set(Napi::String::New(env, "rsa_createKey"), Napi::Function::New(env, ::rsa::createKey));
+  exports.Set(Napi::String::New(env, "rsa_createKeyPem"), Napi::Function::New(env, ::rsa::createKeyPEM));
   exports.Set(Napi::String::New(env, "rsa_pemPrivKeyToDer"), Napi::Function::New(env, ::rsa::pemPrivKeyToDer));
   exports.Set(Napi::String::New(env, "rsa_derPrivKeyToPem"), Napi::Function::New(env, ::rsa::derPrivKeyToPem));
   exports.Set(Napi::String::New(env, "rsa_pemPubKeyToDer"), Napi::Function::New(env, ::rsa::pemPubKeyToDer));
