@@ -5,6 +5,20 @@
 
 namespace {
 
+namespace internal {
+  struct OSSLFreeDeleter
+  {
+    void operator()(uint8_t *ptr) const
+    {
+      if(ptr)
+        OPENSSL_free(ptr);
+    }
+  };
+  
+}
+
+using ByteBuffer = std::unique_ptr<uint8_t[], internal::OSSLFreeDeleter>;
+
 so::Bytes toSoBytes(const Napi::Buffer<uint8_t> &buff)
 {
   so::Bytes ret; ret.reserve(buff.ByteLength());
@@ -18,15 +32,24 @@ void byte_array_delete(Napi::Env /*env*/, uint8_t *arr, const char * /*hint*/ )
 {
 //   std::cout << "BYTE_ARRAY_DELETE " << hint << "\n";
   delete[] arr;
+//  ByteBuffer tmp(arr);
 }
+
+
+void byte_array_ossl_free(Napi::Env /*env*/, uint8_t *arr, const char * /*hint*/ )
+{
+  OPENSSL_free(arr);
+} 
 
 namespace rsa {
 
 class CreateKey : public Napi::AsyncWorker
 {
   int m_keyBits;
-  so::Bytes m_privDer;
-  so::Bytes m_pubDer;
+  ByteBuffer m_privDer;
+  size_t m_privSize; 
+  ByteBuffer m_pubDer;
+  size_t m_pubSize;
 
 public:
   CreateKey(Napi::Function &cb, int keyBits)
@@ -49,22 +72,33 @@ public:
       return;
     }
 
-    auto priv = so::rsa::convertPrivKeyToDer(*key.value);
-    if(!priv)
+
     {
-      AsyncWorker::SetError(priv.msg());
-      return;
+      uint8_t *ptr = nullptr; // this needs to be freed with OPENSSL_free
+      const int len = i2d_RSAPrivateKey(key.value.get(), &ptr);
+      if (0 > len)
+      {
+        AsyncWorker::SetError(so::getLastErrString());
+        return;
+      }
+
+      m_privDer.reset(ptr);
+      m_privSize = static_cast<size_t>(len);
     }
 
-    auto pub = so::rsa::convertPubKeyToDer(*key.value);
-    if(!pub)
     {
-      AsyncWorker::SetError(pub.msg());
-      return;
+      uint8_t *ptr = nullptr; // this needs to be freed with OPENSSL_free
+      const int len = i2d_RSA_PUBKEY(key.value.get(), &ptr);
+      if (0 > len)
+      {
+        AsyncWorker::SetError(so::getLastErrString());
+        return;
+      }
+
+      m_pubDer.reset(ptr);
+      m_pubSize = static_cast<size_t>(len);
     }
 
-    m_privDer = priv.moveValue();
-    m_pubDer = pub.moveValue();
   }
 
   void OnOK() override
@@ -73,8 +107,21 @@ public:
 
     Callback().Call({
       Env().Undefined(),
-      Napi::Buffer<uint8_t>::Copy(Env(), m_privDer.data(), m_privDer.size()),
-      Napi::Buffer<uint8_t>::Copy(Env(), m_pubDer.data(), m_pubDer.size())
+      Napi::Buffer<uint8_t>::New(
+          Env(),
+          m_privDer.release(),
+          m_privSize,
+          byte_array_ossl_free,
+          "CreateKey priv key"     
+      ),
+
+      Napi::Buffer<uint8_t>::New(
+          Env(),
+          m_pubDer.release(),
+          m_pubSize,
+          byte_array_ossl_free,
+          "CreateKey pub key"     
+      )
     });
   }
 
