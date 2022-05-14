@@ -1,5 +1,7 @@
 #include "napi.h"
 
+#include <iostream>
+
 #define SO_IMPLEMENTATION
 #include <simpleopenssl/simpleopenssl.h>
 
@@ -38,6 +40,7 @@ void byte_array_delete(Napi::Env /*env*/, uint8_t *arr, const char * /*hint*/ )
 
 void byte_array_ossl_free(Napi::Env /*env*/, uint8_t *arr, const char * /*hint*/ )
 {
+//  std::cout << "BYTE_ARRAY_OSSL_FREE " << hint << "\n";
   OPENSSL_free(arr);
 } 
 
