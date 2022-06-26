@@ -3,7 +3,7 @@
 #include <iostream>
 
 #define SO_IMPLEMENTATION
-#include <simpleopenssl/simpleopenssl.h>
+#include <simpleopenssl/simpleopenssl.hpp>
 
 namespace {
 
